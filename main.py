@@ -9,6 +9,19 @@ from generators.image_generator import VolcBookGenerator
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+def extract_dialogue(page_text):
+    """从文本中提取对话内容"""
+    # 使用正则表达式 r"「(.*?)」" 匹配中文对话标记
+    # 「 和 」 是中文对话的典型符号（类似「你好」这样的格式）
+    # .*? 是非贪婪匹配，确保匹配到最近的结束符号
+    # re.findall 返回所有匹配结果的列表
+    # return " ".join(matches) 将多个对话合并为一个字符串
+    import re
+    matches = re.findall(r"「(.*?)」", page_text)
+    return " ".join(matches) if matches else None
+    # 在生成图片时添加文字信息
+
+
 def build_image_prompt(page_text, visual_tags):
     """根据文本内容和可视化标签构建图片生成提示词"""
     # 提取可视化元素
@@ -21,7 +34,6 @@ def build_image_prompt(page_text, visual_tags):
 
     # 添加文字标注（如果需要）
     # prompt += "，文字：\"示例文字\" 位置：顶部中央，大小：72px，颜色：#8B4513"
-
     return prompt
 
 def generate_book(params):
@@ -53,12 +65,17 @@ def generate_book(params):
 
         # 构建图片生成提示词
         prompt = build_image_prompt(page_text, story["visual_tags"])
-
+        dialogue = extract_dialogue(page_text)
+        text_info = {
+            "text": dialogue,
+            "position": "bottom-left",  # 可扩展更多位置参数
+            "color": "#2F4F4F"
+        } if dialogue else None
         # 生成图片
         result = image_gen.generate_page(
             prompt=prompt,
             page_num=page_num,
-            style=story["visual_tags"].get("style", "卡通")
+            text_info=text_info  # 新增参数传递
         )
 
         if not result:

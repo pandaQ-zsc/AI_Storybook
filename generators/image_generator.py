@@ -8,6 +8,7 @@ import requests
 from datetime import datetime
 from pathlib import Path
 from tenacity import retry, stop_after_attempt, wait_exponential
+from PIL import Image, ImageDraw, ImageFont
 
 logging.basicConfig(level=logging.DEBUG)  # 显示详细调试信息
 # 配置日志
@@ -172,10 +173,42 @@ class VolcBookGenerator:
             return None
 
 
+    def add_text_overlay(self, image_path, text_info):
+        """在图片上叠加文字"""
+        try:
+            image = Image.open(image_path)
+            draw = ImageDraw.Draw(image)
+
+            # 设置默认字体（需确保有支持中文的字体文件）
+            font_path = "simsun.ttc"  # 宋体字体文件（需自行准备）
+            font_size = 36
+            font = ImageFont.truetype(font_path, font_size)
+
+            # 文字位置和样式（可根据需求调整）
+            margin = 50
+            text_position = (margin, image.height - margin - font_size)
+            text_color = "#8B4513"  # 默认颜色
+
+            # 绘制文字
+            draw.text(
+                text_position,
+                text_info["text"],
+                fill=text_color,
+                font=font,
+                align="left"
+            )
+
+            # 保存带文字的图片
+            image.save(image_path)
+            logger.info(f"文字叠加完成：{image_path}")
+        except Exception as e:
+            logger.error(f"文字叠加失败：{str(e)}")
+
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=10, max=30))
-    def _save_image(self, image_url: str, page_num: int):
+    def _save_image(self, image_url: str, page_num: int, text_info=None):
         """下载并保存图片"""
         try:
+
             response = requests.get(image_url, timeout=15)
             response.raise_for_status()
 
@@ -186,10 +219,13 @@ class VolcBookGenerator:
                 f.write(response.content)
 
             logger.info(f"页面保存成功：{save_path}")
-            return save_path
+            # 新增文字叠加逻辑
+            if text_info:
+                self.add_text_overlay(save_path, text_info)
 
+            return save_path
         except Exception as e:
-            logger.error(f"图片下载失败：{str(e)}")
+            logger.error(f"图片处理失败：{str(e)}")
             raise
 
 # 使用示例
