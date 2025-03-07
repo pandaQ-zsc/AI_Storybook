@@ -1,0 +1,50 @@
+{
+  "params": {
+    "theme": "海洋星球大冒险",
+    "style": "水彩",
+    "page_count": 3
+  },
+  "visual_tags": {
+    "colors": [
+      "蓝色",
+      "绿色"
+    ],
+    "objects": [
+      "潜水艇",
+      "大章鱼",
+      "海底城堡"
+    ]
+  },
+  "raw_data": {
+    "id": "021741352767260bf2bb0dfe46540c2ee22304052e02608512d5a",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "【PAGE】在遥远的宇宙深处，有一颗美丽的海洋星球。阳光洒在波光粼粼的海面上，[巨大的水母]像透明的降落伞在水中飘荡，[五彩的珊瑚礁]形态各异。小探险家奇奇望着眼前的美景，兴奋地喊：「哇，这海洋星球真美！」他的伙伴妙妙也附和：「是呀，快出发去冒险！」\n【PAGE】他们乘坐着透明的[潜水艇]，深入海底。一群[可爱的海豚]围绕着潜水艇欢快游动，像是在欢迎他们。突然，一只[大章鱼]伸出长长的触手，缠住了潜水艇。妙妙有些害怕：「这可怎么办？」奇奇镇定地说：「别慌，我们一起想想办法。」\n【PAGE】就在他们着急时，聪明的奇奇想到用[强力声波器]发出特殊声波，大章鱼被声波干扰，松开了触手。他们成功摆脱困境，继续前行，发现了一座神秘的[海底城堡]。奇奇和妙妙相视一笑：「这里面一定有更多奇妙的东西！」\n{\"colors\": [\"蓝色\", \"绿色\"], \"objects\": [\"潜水艇\", \"大章鱼\", \"海底城堡\"]} ",
+          "role": "assistant",
+          "function_call": null,
+          "tool_calls": null
+        }
+      }
+    ],
+    "created": 1741352774,
+    "model": "doubao-pro-32k-241215",
+    "object": "chat.completion",
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 264,
+      "prompt_tokens": 180,
+      "total_tokens": 444,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "service_tier": "default"
+  }
+}
