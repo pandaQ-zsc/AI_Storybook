@@ -111,9 +111,9 @@ if __name__ == "__main__":
         # "theme": "海底探险",
         # "style": "奇幻水彩",
         # "page_count": 3
-        "theme": "星球冒险",
+        "theme": "天空探险",
         "style": "海洋",
-        "page_count": 3
+        "page_count": 4
     }
 
     result = generate_story(test_params)
