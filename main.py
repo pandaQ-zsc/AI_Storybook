@@ -8,65 +8,83 @@ from fpdf import FPDF, XPos, YPos  # 导入新参数类型
 from generators.text_generator import generate_story
 from generators.image_generator import VolcBookGenerator
 
+# 添加中文字体配置
+FONT_PATH = "/Library/Fonts/SourceHanSerifSC-Regular.otf"  # 思源宋体路径
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def create_pdf(book_dir):
+def create_pdf(book_dir,pages):
     """生成绘本PDF（使用系统默认字体）"""
     pdf = FPDF()
 
-    # 移除所有字体加载逻辑，直接使用系统默认配置
+    # 强制使用UTF-8编码
     pdf.core_fonts_encoding = 'utf-8'
+
+    # 加载中文字体（核心修复）
+    try:
+        pdf.add_font('SourceHan', '', FONT_PATH, uni=True)
+        pdf.add_font('SourceHan', 'B', FONT_PATH, uni=True)  # 加载粗体
+        logger.info("成功加载思源宋体")
+    except Exception as e:
+        logger.error(f"字体加载失败：{e}")
+        return
 
     # 读取元数据
     with open(book_dir / "metadata.json", encoding="utf-8") as f:
         metadata = json.load(f)
 
     # 解析分页内容（核心修复）<button class="citation-flag" data-index="1">
-    pages = []
-    content = metadata["raw_data"]["choices"][0]["message"]["content"]
-    for part in content.split("【PAGE"):
-        if not part.strip():
-            continue
-        page_num = part[0]
-        page_content = part.split("】", 1)[-1].strip()
-        pages.append(page_content)
+    # pages = []
+    # content = metadata["raw_data"]["choices"][0]["message"]["content"]
+    # for part in content.split("【PAGE"):
+    #     if not part.strip():
+    #         continue
+    #     page_num = part[0]
+    #     page_content = part.split("】", 1)[-1].strip()
+    #     pages.append(page_content)
 
     # 添加封面
     pdf.add_page()
-    pdf.set_font('Helvetica', 'B', 24)
+    pdf.set_font('SourceHan', 'B', 24)
     pdf.cell(
         200,
         30,
-        text=metadata["params"]["theme"],
+        text=pages[0].split("\n")[0][:20], # 取首段首句作为标题
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
         align='C'
     )
     # 添加内容页
-    for page_num in range(1, metadata["params"]["page_count"]+1):
-        # 图片页
+    # for page_num in range(1, metadata["params"]["page_count"]+1):
+    #     # 图片页
+    #     pdf.add_page()
+    #     image_path = str(book_dir / f"page_{page_num:03d}.png")
+    #     pdf.image(image_path, x=10, y=30, w=190)
+    #
+    #     # 文字页
+    #     pdf.add_page()
+    #     pdf.set_font('Helvetica', '', 12)
+    #     text_content = pages[page_num-1]  # 修正内容获取方式
+    #
+    #     # 处理中文显示（核心修复）<button class="citation-flag" data-index="2">
+    #     try:
+    #         pdf.multi_cell(0, 10, txt=text_content.encode('latin1').decode('utf8', errors='ignore'))
+    #     except:
+    #         pdf.multi_cell(0, 10, txt=text_content.encode('utf8').decode('latin1', errors='ignore'))
+
+    for page_num in range(1, len(pages)+1):
         pdf.add_page()
         image_path = str(book_dir / f"page_{page_num:03d}.png")
-        pdf.image(image_path, x=10, y=30, w=190)
-
-        # 文字页
-        pdf.add_page()
-        pdf.set_font('Helvetica', '', 12)
-        text_content = pages[page_num-1]  # 修正内容获取方式
-
-        # 处理中文显示（核心修复）<button class="citation-flag" data-index="2">
-        try:
-            pdf.multi_cell(0, 10, txt=text_content.encode('latin1').decode('utf8', errors='ignore'))
-        except:
-            pdf.multi_cell(0, 10, txt=text_content.encode('utf8').decode('latin1', errors='ignore'))
+        pdf.image(image_path, x=10, y=10, w=190)  # 插入带文字的图片
 
     # 保存PDF
-    pdf_path = book_dir / "book.pdf"
-    pdf.output(str(pdf_path))
-    logger.info(f"PDF生成成功：{pdf_path}")
+    pdf.output(str(book_dir / "book.pdf"))
+    logger.info(f"PDF生成成功：{book_dir / 'book.pdf'}")
+    # pdf_path = book_dir / "book.pdf"
+    # pdf.output(str(pdf_path))
+    # logger.info(f"PDF生成成功：{pdf_path}")
 
 def extract_dialogue(page_text):
     """从文本中提取对话内容"""
@@ -86,7 +104,7 @@ def build_image_prompt(page_text, visual_tags):
     # 提取可视化元素
     elements = [item.strip("[]") for item in page_text.split() if item.startswith("[")]
 
-    # 构建提示词
+    # 构建提示词（排除JSON部分）<button class="citation-flag" data-index="2">
     prompt = f"{visual_tags.get('style', '卡通')}风格，"
     prompt += "，".join(elements)
     prompt += f"，主色调：{','.join(visual_tags.get('colors', []))}"
@@ -118,31 +136,55 @@ def generate_book(params):
             "raw_data": story["raw_data"]
         }, f, ensure_ascii=False, indent=2)
 
+    # 解析分页内容（核心修改）<button class="citation-flag" data-index="1">
+    raw_content = story["raw_data"]["choices"][0]["message"]["content"]
+    pages = [p.strip() for p in raw_content.split("【PAGE】")[1:] if p.strip()]
+    pages = pages[:params["page_count"]]  # 确保页数匹配
+
     # 生成每页内容
-    for page_num, page_text in enumerate(story["pages"], 1):
+    for page_num, page_text in enumerate(pages, 1):
         logger.info(f"正在生成第{page_num}页...")
 
-        # 构建图片生成提示词
+        # 构建图片提示词
         prompt = build_image_prompt(page_text, story["visual_tags"])
+
+        # 提取对话内容
         dialogue = extract_dialogue(page_text)
         text_info = {
             "text": dialogue,
-            "position": "bottom-left",  # 可扩展更多位置参数
-            "color": "#2F4F4F"
+            "position": "bottom-center",
+            "color": "#FFFFFF"
         } if dialogue else None
-        # 生成图片
+
+        # 生成带文字的图片
         result = image_gen.generate_page(
             prompt=prompt,
             page_num=page_num,
-            text_info=text_info  # 新增参数传递
+            text_info=text_info
         )
 
         if not result:
-            logger.warning(f"第{page_num}页图片生成失败，跳过...")
+            logger.warning(f"第{page_num}页生成失败，跳过...")
             continue
-
-    create_pdf(book_dir)
+    # 打印解析后的分页内容
+    for i, page in enumerate(pages):
+        print("--------")
+        print(f"Page {i+1}: {page[:50]}...")
+        print("--------")
+    create_pdf(book_dir, pages)
 if __name__ == "__main__":
+    #
+    # from PIL import Image
+    # test_img = Image.new('RGB', (1024, 768), color=(0, 0, 128))
+    # test_img.save("test_bg.png")
+    # image_gen = VolcBookGenerator()
+    # image_gen.add_text_overlay("test_bg.png", {
+    #     "text": "测试文字叠加",
+    #     "position": "bottom-center",
+    #     "color": "#FFFFFF"
+    # })
+
+
     # 生成参数配置
     book_params = {
         "theme": "海洋星球大冒险",
@@ -165,7 +207,7 @@ if __name__ == "__main__":
     # })
 
 
-
+    #
     # from PIL import Image
     # test_img = Image.new('RGB', (1024, 768), color=(0, 0, 0))  # 黑色背景
     # test_img.save("test_bg.jpg")
