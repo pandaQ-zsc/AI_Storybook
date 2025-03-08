@@ -189,50 +189,20 @@ class VolcBookGenerator:
             logger.error(f"生成过程中出现错误：{str(e)}")
             return None
 
-
-    # def add_text_overlay(self, image_path, text_info):
-    #     """在图片上叠加文字"""
-    #     try:
-    #         image = Image.open(image_path)
-    #         draw = ImageDraw.Draw(image)
-    #
-    #         # 设置默认字体（需确保有支持中文的字体文件）
-    #         font_path = "simsun.ttc"  # 宋体字体文件（需自行准备）
-    #         font_size = 36
-    #         font = ImageFont.truetype(font_path, font_size)
-    #
-    #         # 文字位置和样式（可根据需求调整）
-    #         margin = 50
-    #         text_position = (margin, image.height - margin - font_size)
-    #         text_color = "#8B4513"  # 默认颜色
-    #
-    #         # 绘制文字
-    #         draw.text(
-    #             text_position,
-    #             text_info["text"],
-    #             fill=text_color,
-    #             font=font,
-    #             align="left"
-    #         )
-    #
-    #         # 保存带文字的图片
-    #         image.save(image_path)
-    #         logger.info(f"文字叠加完成：{image_path}")
-    #     except Exception as e:
-    #         logger.error(f"文字叠加失败：{str(e)}")
     def add_text_overlay(self, image_path, text_info):
-        """优化后的文字叠加实现（支持精准自动换行）"""
+        """在图片上叠加文字 """
+        if not text_info:
+            return image_path
+
         try:
             image = Image.open(image_path)
             draw = ImageDraw.Draw(image)
 
             # 字体配置
-            font_size = 36
             font = ImageFont.truetype(
-                self.font_path,
-                font_size,
-                index=0,
-                encoding='unic'
+                "/System/Library/Fonts/STHeiti Medium.ttc",  # 华文黑体 <button class="citation-flag" data-index="1">
+                36,
+                index=0
             )
 
             # 文字内容和样式
@@ -240,92 +210,131 @@ class VolcBookGenerator:
             color = text_info.get("color", "#FFFFFF")
             padding = 20  # 内边距
             line_spacing = 10  # 行间距
-
-            # 自动换行核心逻辑（按词分割优化版）
-            max_width = image.width - 2 * padding  # 最大宽度
-            words = text.replace("\n", " ").split()  # 处理换行符
+            # 自动换行和位置计算
+            margin = 50
+            max_width = image.width - 2 * margin
             lines = []
-            current_line = ""
+            line = ""
+            for word in text:
+                test_line = line + word
+                bbox = draw.textbbox((0, 0), test_line, font=font)
+                if bbox[2] - bbox[0] > max_width:
+                    lines.append(line)
+                    line = word
+                else:
+                    line += word
+            lines.append(line)
 
-            for word in words:
-                # 处理长单词强制分割
-                while len(word) > 0:
-                    # 计算当前行添加单词后的宽度
-                    test_line = current_line + word + " "
-                    bbox = draw.textbbox((0, 0), test_line, font=font)
-                    text_width = bbox[2] - bbox[0]
-
-                    if text_width <= max_width:
-                        current_line = test_line
-                        break
-                    else:
-                        # 分割过长的单词
-                        split_pos = min(len(word), max(1, int(len(word)*0.8)))
-                        part1 = word[:split_pos]
-                        part2 = word[split_pos:]
-
-                        # 添加分割部分
-                        test_line_part = current_line + part1 + "-"
-                        bbox_part = draw.textbbox((0, 0), test_line_part, font=font)
-
-                        if bbox_part[2] - bbox_part[0] <= max_width:
-                            lines.append(current_line + part1 + "-")
-                            current_line = ""
-                            word = part2
-                        else:
-                            # 无法分割时强制换行
-                            if current_line:
-                                lines.append(current_line)
-                            current_line = part1 + "-"
-                            word = part2
-
-            # 添加最后一行
-            if current_line:
-                lines.append(current_line.strip())
-
-            # 计算文字区块总高度
+            # 计算垂直位置（底部居中）
             total_height = sum(
-                [draw.textbbox((0,0), line, font=font)[3] for line in lines]
-            ) + line_spacing * (len(lines) - 1)
-
-            # 位置计算（底部居中）
-            x = (image.width - max_width) // 2  # 水平居中
-            y = image.height - total_height - padding  # 底部对齐
+                draw.textbbox((0, 0), line, font=font)[3]
+                for line in lines
+            ) + 10 * (len(lines) - 1)
+            y_start = image.height - total_height - margin
 
             # 绘制文字
             for line in lines:
-                # 计算当前行实际宽度
                 bbox = draw.textbbox((0, 0), line, font=font)
-                line_width = bbox[2] - bbox[0]
-
-                # 水平居中调整
-                x_centered = x + (max_width - line_width) // 2
-
-                # 阴影效果
-                for offset in [(-1,-1), (-1,1), (1,-1), (1,1)]:
-                    draw.text(
-                        (x_centered + offset[0], y + offset[1]),
-                        line,
-                        font=font,
-                        fill="black"
-                    )
-
-                # 主文字
+                x = (image.width - (bbox[2] - bbox[0])) // 2  # 水平居中
                 draw.text(
-                    (x_centered, y),
+                    (x, y_start),
                     line,
                     font=font,
                     fill=color
                 )
-
-                # 更新y坐标
-                y += bbox[3] + line_spacing
+                y_start += bbox[3] + 10  # 行间距
 
             image.save(image_path)
-            logger.info(f"文字叠加完成：{text} -> {image_path}")
+            logger.info(f"文字叠加成功：{text} -> {image_path}")
+            return image_path
         except Exception as e:
             logger.error(f"文字叠加失败：{str(e)}")
-            raise
+            return image_path
+        #     # 自动换行核心逻辑（按词分割优化版）
+        #     max_width = image.width - 2 * padding  # 最大宽度
+        #     words = text.replace("\n", " ").split()  # 处理换行符
+        #     lines = []
+        #     current_line = ""
+        #
+        #     for word in words:
+        #         # 处理长单词强制分割
+        #         while len(word) > 0:
+        #             # 计算当前行添加单词后的宽度
+        #             test_line = current_line + word + " "
+        #             bbox = draw.textbbox((0, 0), test_line, font=font)
+        #             text_width = bbox[2] - bbox[0]
+        #
+        #             if text_width <= max_width:
+        #                 current_line = test_line
+        #                 break
+        #             else:
+        #                 # 分割过长的单词
+        #                 split_pos = min(len(word), max(1, int(len(word)*0.8)))
+        #                 part1 = word[:split_pos]
+        #                 part2 = word[split_pos:]
+        #
+        #                 # 添加分割部分
+        #                 test_line_part = current_line + part1 + "-"
+        #                 bbox_part = draw.textbbox((0, 0), test_line_part, font=font)
+        #
+        #                 if bbox_part[2] - bbox_part[0] <= max_width:
+        #                     lines.append(current_line + part1 + "-")
+        #                     current_line = ""
+        #                     word = part2
+        #                 else:
+        #                     # 无法分割时强制换行
+        #                     if current_line:
+        #                         lines.append(current_line)
+        #                     current_line = part1 + "-"
+        #                     word = part2
+        #
+        #     # 添加最后一行
+        #     if current_line:
+        #         lines.append(current_line.strip())
+        #
+        #     # 计算文字区块总高度
+        #     total_height = sum(
+        #         [draw.textbbox((0,0), line, font=font)[3] for line in lines]
+        #     ) + line_spacing * (len(lines) - 1)
+        #
+        #     # 位置计算（底部居中）
+        #     x = (image.width - max_width) // 2  # 水平居中
+        #     y = image.height - total_height - padding  # 底部对齐
+        #
+        #     # 绘制文字
+        #     for line in lines:
+        #         # 计算当前行实际宽度
+        #         bbox = draw.textbbox((0, 0), line, font=font)
+        #         line_width = bbox[2] - bbox[0]
+        #
+        #         # 水平居中调整
+        #         x_centered = x + (max_width - line_width) // 2
+        #
+        #         # 阴影效果
+        #         for offset in [(-1,-1), (-1,1), (1,-1), (1,1)]:
+        #             draw.text(
+        #                 (x_centered + offset[0], y + offset[1]),
+        #                 line,
+        #                 font=font,
+        #                 fill="black"
+        #             )
+        #
+        #         # 主文字
+        #         draw.text(
+        #             (x_centered, y),
+        #             line,
+        #             font=font,
+        #             fill=color
+        #         )
+        #
+        #         # 更新y坐标
+        #         y += bbox[3] + line_spacing
+        #
+        #     image.save(image_path)
+        #     logger.info(f"文字叠加完成：{text} -> {image_path}")
+        # except Exception as e:
+        #     logger.error(f"文字叠加失败：{str(e)}")
+        #     raise
     @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=10, max=30))
     def _save_image(self, image_url: str, page_num: int, text_info=None):
         """下载并保存图片"""
