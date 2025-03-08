@@ -174,6 +174,10 @@ class VolcBookGenerator:
                 with open(save_path, "wb") as f:
                     f.write(image_content)
                 logger.info(f"Base64图片保存成功：{save_path}")
+                # 添加文字叠加逻辑
+                text_info = params.get('text_info')
+                if text_info:
+                    self.add_text_overlay(save_path, text_info)
                 return save_path
             elif image_urls:
                 image_url = image_urls[0]
@@ -195,35 +199,52 @@ class VolcBookGenerator:
             return image_path
 
         try:
+            if not os.path.exists(image_path):
+                raise FileNotFoundError(f"图片文件未找到：{image_path}")
+
             image = Image.open(image_path)
             draw = ImageDraw.Draw(image)
 
             # 字体配置
-            font = ImageFont.truetype(
-                "/System/Library/Fonts/STHeiti Medium.ttc",  # 华文黑体 <button class="citation-flag" data-index="1">
-                36,
-                index=0
-            )
+            FONT_PATH = "/Library/Fonts/SourceHanSerifSC-Regular.otf"
+            if not os.path.exists(FONT_PATH):
+                raise FileNotFoundError(f"思源字体未找到：{FONT_PATH}")
 
-            # 文字内容和样式
+            font = ImageFont.truetype(FONT_PATH, 36)
             text = text_info.get("text", "")
             color = text_info.get("color", "#FFFFFF")
-            padding = 20  # 内边距
-            line_spacing = 10  # 行间距
             # 自动换行和位置计算
+            # margin = 50
+            # max_width = image.width - 2 * margin
+            # lines = []
+            # line = ""
+            # for word in text:
+            #     test_line = line + word
+            #     bbox = draw.textbbox((0, 0), test_line, font=font)
+            #     if bbox[2] - bbox[0] > max_width:
+            #         lines.append(line)
+            #         line = word
+            #     else:
+            #         line += word
+            # lines.append(line)
+
+            # 3. 智能换行算法
             margin = 50
             max_width = image.width - 2 * margin
             lines = []
-            line = ""
-            for word in text:
-                test_line = line + word
+            current_line = ""
+
+            for word in text.split(" "):
+                test_line = current_line + word + " "
                 bbox = draw.textbbox((0, 0), test_line, font=font)
-                if bbox[2] - bbox[0] > max_width:
-                    lines.append(line)
-                    line = word
+                text_width = bbox[2] - bbox[0]
+
+                if text_width <= max_width:
+                    current_line = test_line
                 else:
-                    line += word
-            lines.append(line)
+                    lines.append(current_line.strip())
+                    current_line = word + " "
+            lines.append(current_line.strip())
 
             # 计算垂直位置（底部居中）
             total_height = sum(
@@ -231,11 +252,23 @@ class VolcBookGenerator:
                 for line in lines
             ) + 10 * (len(lines) - 1)
             y_start = image.height - total_height - margin
+            x_center = image.width // 2
 
             # 绘制文字
             for line in lines:
                 bbox = draw.textbbox((0, 0), line, font=font)
-                x = (image.width - (bbox[2] - bbox[0])) // 2  # 水平居中
+                # x = (image.width - (bbox[2] - bbox[0])) // 2  # 水平居中
+                line_width = bbox[2] - bbox[0]
+                x = x_center - line_width // 2  # 水平居中
+                # 绘制阴影
+                for offset in [(-1,-1), (-1,1), (1,-1), (1,1)]:
+                    draw.text(
+                        (x + offset[0], y_start + offset[1]),
+                        line,
+                        font=font,
+                        fill="black"
+                    )
+
                 draw.text(
                     (x, y_start),
                     line,
@@ -243,10 +276,11 @@ class VolcBookGenerator:
                     fill=color
                 )
                 y_start += bbox[3] + 10  # 行间距
-
+            # 6. 保存图片
             image.save(image_path)
             logger.info(f"文字叠加成功：{text} -> {image_path}")
             return image_path
+
         except Exception as e:
             logger.error(f"文字叠加失败：{str(e)}")
             return image_path

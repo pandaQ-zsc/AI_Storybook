@@ -1,4 +1,5 @@
 # main.py
+import re
 import json
 import logging
 import os
@@ -102,7 +103,8 @@ def extract_dialogue(page_text):
 def build_image_prompt(page_text, visual_tags):
     """根据文本内容和可视化标签构建图片生成提示词"""
     # 提取可视化元素
-    elements = [item.strip("[]") for item in page_text.split() if item.startswith("[")]
+    # elements = [item.strip("[]") for item in page_text.split() if item.startswith("[")]
+    elements = re.findall(r'\[(.*?)\]', page_text)
 
     # 构建提示词（排除JSON部分）<button class="citation-flag" data-index="2">
     prompt = f"{visual_tags.get('style', '卡通')}风格，"
