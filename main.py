@@ -189,7 +189,7 @@ if __name__ == "__main__":
 
     # 生成参数配置
     book_params = {
-        "theme": "海洋星球大冒险",
+        "theme": "星球冒险",
         "style": "水彩",
         "page_count": 3
     }

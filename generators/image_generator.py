@@ -9,6 +9,7 @@ from datetime import datetime
 from pathlib import Path
 from tenacity import retry, stop_after_attempt, wait_exponential
 from PIL import Image, ImageDraw, ImageFont
+from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.DEBUG)  # 显示详细调试信息
 # 配置日志
@@ -30,10 +31,13 @@ SERVICE_CONFIG = {
 class VolcBookGenerator:
     """火山引擎绘本生成器"""
 
+    # 添加load_dotenv()  默认加载.env文件
+    load_dotenv()
+
     def __init__(self, output_dir="output"):
         # 初始化配置
-        self.access_key = "AKLTNWU1ZGQyNDZkZTkwNDhjN2FhNDhhZDY0ZmQ3YzcxYmM"
-        self.secret_key = "TUdNMU9UTXpOR0ZtWXpZME5EQTRPV0k1Tm1JeFpqRmhaVGt3TkdWaFl6WQ=="
+        self.access_key = os.getenv("VOLC_AK")
+        self.secret_key = os.getenv("VOLC_SK")
         self.output_dir = Path(output_dir)
         self._validate_credentials()
         self._init_workspace()
@@ -400,9 +404,9 @@ if __name__ == "__main__":
 
     # 生成绘本页面
     pages = [
-        {"prompt": "卡通风格，森林中的小木屋，烟囱冒着炊烟，文字：\"FUKUN\" 位置：顶部中央，大小：72px，颜色：#ff00ff"},
+        {"prompt": "卡通风格，森林中的小木屋，烟囱冒着炊烟，文字：\"FUKUN\" 位置：顶部中央，大小：50px，颜色：#ff00ff"},
         {"prompt": "水彩风格，湖边钓鱼的熊先生，文字：\"XQQ\" 位置：右下角，颜色：#2F4F4F"},
-        {"prompt": "科幻风格，太空站里的机器人，文字：\"地球历 3023\" 位置：左下角，大小：48px"}
+        {"prompt": "科幻风格，太空站里的机器人，文字：\"地球历 2025\" 位置：左下角，大小：48px"}
     ]
 
     for idx, page_config in enumerate(pages, 1):
