@@ -35,3 +35,12 @@ export function getImageUrl(theme, filename) {
 export function getPdfUrl(theme) {
   return `/api/books/${encodeURIComponent(theme)}/pdf`
 }
+
+/**
+ * 删除绘本
+ * @param {string} theme 绘本主题
+ * @returns {Promise}
+ */
+export function deleteBook(theme) {
+  return axios.delete(`/api/books/${encodeURIComponent(theme)}`)
+}

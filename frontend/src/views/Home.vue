@@ -1,13 +1,23 @@
 <template>
   <div class="home-container">
     <el-card class="header-card">
-      <div style="display: flex; align-items: center;">
-        <img src="../assets/images/BNBU_log.png" alt="Logo" class="header-logo">
-        <div class="header-text">
-          <h1>BNBU-IMS</h1>
-          <h1>XQ</h1>
-          <h1>基于AIGC的绘本生成器</h1>
-          <p>输入创作主题，自动生成精美儿童绘本</p>
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div class="header-left" style="display: flex; align-items: center;">
+          <a href="https://www.uic.edu.cn" target="_blank">
+          <img src="../assets/images/BNBU_log.png" alt="Logo" class="header-logo">
+          </a>
+          <div class="header-text">
+            <h1>BNBU-IMS</h1>
+            <h1>XQ</h1>
+            <h1>基于AIGC的绘本生成器</h1>
+            <p>输入创作主题，自动生成精美儿童绘本</p>
+          </div>
+        </div>
+        <div class="user-info">
+          <span class="welcome-text">欢迎，{{ username }}</span>
+          <el-button type="danger" size="small" @click="logout">
+            <el-icon><SwitchButton /></el-icon> 退出登录
+          </el-button>
         </div>
       </div>
     </el-card>
@@ -27,7 +37,7 @@
             </template>
           </el-input>
         </el-form-item>
-        
+
         <el-form-item label="页数">
           <el-slider v-model="form.page_count" :min="1" :max="6" :step="1" show-stops />
           <div class="page-count-text">{{ form.page_count }} 页</div>
@@ -57,13 +67,34 @@
       <h2>已生成的绘本</h2>
       <el-row :gutter="20">
         <el-col :xs="24" :sm="12" :md="8" :lg="6" v-for="book in books" :key="book.theme">
-          <el-card class="book-card" shadow="hover" @click="viewBook(book)">
+          <el-card class="book-card" shadow="hover">
             <template #header>
               <div class="book-header">
                 <span>{{ book.theme }}</span>
+                <div class="book-actions">
+                  <el-button
+                    type="danger"
+                    size="small"
+                    circle
+                    @click.stop="confirmDelete(book)"
+                    title="删除绘本"
+                  >
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
+                  <el-button
+                    type="primary"
+                    size="small"
+                    circle
+                    @click.stop="regenerateBook(book)"
+                    title="重新生成"
+                    :loading="book.regenerating"
+                  >
+                    <el-icon><Refresh /></el-icon>
+                  </el-button>
+                </div>
               </div>
             </template>
-            <div class="book-cover">
+            <div class="book-cover" @click="viewBook(book)">
               <img :src="getImageUrl(book.theme, book.images[0])" alt="封面">
             </div>
             <div class="book-info">
@@ -75,20 +106,77 @@
         </el-col>
       </el-row>
     </div>
+
+    <!-- 删除确认对话框 -->
+    <el-dialog
+      v-model="deleteDialogVisible"
+      title="确认删除"
+      width="30%"
+    >
+      <span>确定要删除绘本"{{ bookToDelete?.theme }}"吗？此操作不可恢复。</span>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button @click="deleteDialogVisible = false">取消</el-button>
+          <el-button type="danger" @click="deleteBook" :loading="deleting">确认删除</el-button>
+        </span>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeMount } from 'vue'
 import { useRouter } from 'vue-router'
-import { Loading } from '@element-plus/icons-vue'
-import { generateBook, getBooksList, getImageUrl } from '../api'
-import { ElMessage } from 'element-plus'
+import { Loading, Delete, Refresh, SwitchButton } from '@element-plus/icons-vue'
+import { generateBook, getBooksList, getImageUrl, deleteBook as apiDeleteBook } from '../api'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const loading = ref(false)
 const loadingStatus = ref('')
 const books = ref([])
+const deleteDialogVisible = ref(false)
+const bookToDelete = ref(null)
+const deleting = ref(false)
+const username = ref('用户')
+
+// 检查登录状态
+onBeforeMount(() => {
+  const isLoggedIn = localStorage.getItem('isLoggedIn')
+  if (!isLoggedIn || isLoggedIn !== 'true') {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+
+  // 获取用户名
+  const storedUsername = localStorage.getItem('username')
+  if (storedUsername) {
+    username.value = storedUsername
+  }
+})
+
+// 退出登录
+const logout = () => {
+  ElMessageBox.confirm(
+    '确定要退出登录吗？',
+    '退出提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  )
+    .then(() => {
+      localStorage.removeItem('isLoggedIn')
+      localStorage.removeItem('username')
+      ElMessage.success('已退出登录')
+      router.push('/login')
+    })
+    .catch(() => {
+      // 取消退出
+    })
+}
 
 const form = ref({
   theme: '',
@@ -136,18 +224,132 @@ const submitForm = async () => {
 // 获取绘本列表
 const loadBooksList = async () => {
   try {
-    const response = await getBooksList()
+    // 添加加载状态
+    const loadingInstance = ElMessage({
+      type: 'info',
+      message: '正在获取绘本列表...',
+      duration: 0
+    });
+
+    const response = await getBooksList();
+
+    // 关闭加载提示
+    loadingInstance.close();
+
     if (response.data.success) {
-      books.value = response.data.books
+      // 为每本书添加regenerating标记
+      books.value = response.data.books.map(book => ({
+        ...book,
+        regenerating: false,
+        has_pdf: book.has_pdf ?? false // 如果后端未提供has_pdf，默认为false
+        
+      }));
+
+      if (books.value.length === 0) {
+        ElMessage.info('还没有生成过绘本，创建一个新绘本吧！');
+      }
+    } else {
+      ElMessage.warning('获取绘本列表失败，请刷新页面重试');
+      console.error('获取绘本列表失败:', response.data.message);
     }
   } catch (error) {
-    console.error('获取绘本列表失败:', error)
+    console.error('获取绘本列表失败:', error);
+
+    // 显示友好的错误信息
+    ElMessage.error({
+      message: '连接服务器失败，请确保后端服务已启动',
+      duration: 5000
+    });
+
+    // 设置空列表防止UI错误
+    books.value = [];
   }
 }
 
 // 查看绘本详情
 const viewBook = (book) => {
   router.push(`/book/${book.theme}`)
+}
+
+// 确认删除对话框
+const confirmDelete = (book) => {
+  bookToDelete.value = book
+  deleteDialogVisible.value = true
+}
+
+// 删除绘本
+const deleteBook = async () => {
+  if (!bookToDelete.value) return
+
+  try {
+    deleting.value = true
+    const response = await apiDeleteBook(bookToDelete.value.theme)
+
+    if (response.data.success) {
+      ElMessage.success('绘本已删除')
+      // 从列表中移除
+      books.value = books.value.filter(b => b.theme !== bookToDelete.value.theme)
+    } else {
+      ElMessage.error(response.data.message || '删除失败')
+    }
+  } catch (error) {
+    console.error('删除失败:', error)
+    ElMessage.error('删除绘本失败，请重试')
+  } finally {
+    deleting.value = false
+    deleteDialogVisible.value = false
+    bookToDelete.value = null
+  }
+}
+
+// 重新生成绘本
+const regenerateBook = async (book) => {
+  try {
+    // 确认是否重新生成
+    await ElMessageBox.confirm(
+      `确定要重新生成绘本"${book.theme}"吗？`,
+      '确认重新生成',
+      {
+        confirmButtonText: '确认',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
+
+    // 设置对应书籍的regenerating状态为true
+    const bookIndex = books.value.findIndex(b => b.theme === book.theme)
+    if (bookIndex !== -1) {
+      books.value[bookIndex].regenerating = true
+    }
+
+    // 使用原有参数重新生成
+    const params = {
+      theme: book.metadata.params.theme,
+      style: book.metadata.params.style,
+      page_count: book.metadata.params.page_count
+    }
+
+    const response = await generateBook(params)
+
+    if (response.data.success) {
+      ElMessage.success('绘本重新生成成功！')
+      loadBooksList() // 重新加载列表
+      router.push(`/book/${book.theme}`)
+    } else {
+      ElMessage.error(response.data.message || '重新生成失败')
+    }
+  } catch (error) {
+    if (error !== 'cancel') {
+      console.error('重新生成失败:', error)
+      ElMessage.error('重新生成绘本失败，请重试')
+    }
+  } finally {
+    // 重置所有书籍的regenerating状态
+    books.value = books.value.map(b => ({
+      ...b,
+      regenerating: false
+    }))
+  }
 }
 
 // 页面加载时获取绘本列表
@@ -235,7 +437,6 @@ onMounted(() => {
 
 .book-card {
   margin-bottom: 20px;
-  cursor: pointer;
   transition: transform 0.3s;
 }
 
@@ -244,10 +445,21 @@ onMounted(() => {
 }
 
 .book-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.book-header span {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: bold;
+}
+
+.book-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .book-cover {
@@ -258,6 +470,7 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
   background-color: #f5f7fa;
+  cursor: pointer;
 }
 
 .book-cover img {
@@ -278,5 +491,18 @@ onMounted(() => {
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
+}
+
+/* 添加用户信息样式 */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcome-text {
+  font-size: 14px;
+  color: #409EFF;
+  font-weight: bold;
 }
 </style>

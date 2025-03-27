@@ -6,6 +6,7 @@ from pathlib import Path
 import json
 import logging
 from main import generate_book
+import shutil
 
 app = Flask(__name__)
 CORS(app)  # 允许跨域请求
@@ -76,25 +77,35 @@ def list_books():
     """列出所有已生成的绘本"""
     try:
         books = []
+        # 检查books目录是否存在
+        if not BOOKS_DIR.exists() or not BOOKS_DIR.is_dir():
+            logger.warning(f"绘本目录不存在: {BOOKS_DIR}")
+            return jsonify({"success": True, "books": []})
+
         for book_dir in BOOKS_DIR.iterdir():
             if book_dir.is_dir():
-                metadata_path = book_dir / "metadata.json"
-                if metadata_path.exists():
-                    with open(metadata_path, "r", encoding="utf-8") as f:
-                        metadata = json.load(f)
+                try:
+                    metadata_path = book_dir / "metadata.json"
+                    if metadata_path.exists():
+                        with open(metadata_path, "r", encoding="utf-8") as f:
+                            metadata = json.load(f)
 
-                    image_files = [f.name for f in book_dir.glob("page_*.png")]
-                    image_files.sort()
+                        image_files = [f.name for f in book_dir.glob("page_*.png")]
+                        image_files.sort()
 
-                    pdf_path = book_dir / "book.pdf"
-                    has_pdf = pdf_path.exists()
+                        pdf_path = book_dir / "book.pdf"
+                        has_pdf = pdf_path.exists()
 
-                    books.append({
-                        "theme": book_dir.name,
-                        "images": image_files,
-                        "metadata": metadata,
-                        "has_pdf": has_pdf
-                    })
+                        books.append({
+                            "theme": book_dir.name,
+                            "images": image_files,
+                            "metadata": metadata,
+                            "has_pdf": has_pdf
+                        })
+                except Exception as inner_e:
+                    # 记录单本绘本的错误，但继续处理其他绘本
+                    logger.error(f"处理绘本 {book_dir.name} 时出错: {str(inner_e)}")
+                    continue
 
         return jsonify({"success": True, "books": books})
 
@@ -113,6 +124,24 @@ def get_book_pdf(theme):
     """获取绘本PDF"""
     book_dir = BOOKS_DIR / theme
     return send_from_directory(book_dir, "book.pdf")
+
+@app.route('/api/books/<theme>', methods=['DELETE'])
+def delete_book(theme):
+    """删除指定的绘本"""
+    try:
+        book_dir = BOOKS_DIR / theme
+
+        if not book_dir.exists() or not book_dir.is_dir():
+            return jsonify({"success": False, "message": "绘本不存在"}), 404
+
+        # 删除整个目录
+        shutil.rmtree(book_dir)
+
+        return jsonify({"success": True, "message": f"已成功删除绘本: {theme}"})
+
+    except Exception as e:
+        logger.error(f"删除绘本失败: {str(e)}")
+        return jsonify({"success": False, "message": f"删除失败: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)
