@@ -3,7 +3,9 @@
     <el-card class="header-card">
       <div style="display: flex; align-items: center; justify-content: space-between;">
         <div class="header-left" style="display: flex; align-items: center;">
+          <a href="https://www.uic.edu.cn" target="_blank">
           <img src="../assets/images/BNBU_log.png" alt="Logo" class="header-logo">
+          </a>
           <div class="header-text">
             <h1>BNBU-IMS</h1>
             <h1>XQ</h1>
@@ -238,7 +240,9 @@ const loadBooksList = async () => {
       // 为每本书添加regenerating标记
       books.value = response.data.books.map(book => ({
         ...book,
-        regenerating: false
+        regenerating: false,
+        has_pdf: book.has_pdf ?? false // 如果后端未提供has_pdf，默认为false
+        
       }));
 
       if (books.value.length === 0) {

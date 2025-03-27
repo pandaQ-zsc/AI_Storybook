@@ -2,7 +2,9 @@
   <div class="login-container">
     <el-card class="login-card">
       <div class="login-header">
-        <img src="../assets/images/BNBU_log.png" alt="BNBU Logo" class="login-logo">
+        <a href="https://www.uic.edu.cn" target="_blank">
+          <img src="../assets/images/BNBU_log.png" alt="BNBU Logo" class="login-logo">
+        </a>
         <h2 class="login-title">基于AIGC的绘本生成器</h2>
       </div>
 
@@ -68,7 +70,7 @@ const submitForm = async (formEl) => {
     if (valid) {
       // 这里可以添加账号密码验证逻辑
       // const envUsername = "xq"
-      const envUsername = ["xq","fukun","admin"]
+      const envUsername = ["xq","fukun","admin","lyy","syy"]
       const envPassword = "123123"
       if (envUsername.includes(form.username) && form.password === envPassword) {
         ElMessage.success('登录成功')
