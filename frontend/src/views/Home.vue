@@ -222,16 +222,43 @@ const submitForm = async () => {
 // 获取绘本列表
 const loadBooksList = async () => {
   try {
-    const response = await getBooksList()
+    // 添加加载状态
+    const loadingInstance = ElMessage({
+      type: 'info',
+      message: '正在获取绘本列表...',
+      duration: 0
+    });
+
+    const response = await getBooksList();
+
+    // 关闭加载提示
+    loadingInstance.close();
+
     if (response.data.success) {
       // 为每本书添加regenerating标记
       books.value = response.data.books.map(book => ({
         ...book,
         regenerating: false
-      }))
+      }));
+
+      if (books.value.length === 0) {
+        ElMessage.info('还没有生成过绘本，创建一个新绘本吧！');
+      }
+    } else {
+      ElMessage.warning('获取绘本列表失败，请刷新页面重试');
+      console.error('获取绘本列表失败:', response.data.message);
     }
   } catch (error) {
-    console.error('获取绘本列表失败:', error)
+    console.error('获取绘本列表失败:', error);
+
+    // 显示友好的错误信息
+    ElMessage.error({
+      message: '连接服务器失败，请确保后端服务已启动',
+      duration: 5000
+    });
+
+    // 设置空列表防止UI错误
+    books.value = [];
   }
 }
 
