@@ -1,0 +1,253 @@
+<template>
+  <div class="home-container">
+    <el-card class="header-card">
+      <h1>AI绘本生成器</h1>
+      <p>输入创作主题，自动生成精美儿童绘本</p>
+    </el-card>
+
+    <!-- 生成表单 -->
+    <el-card class="form-card">
+      <el-form :model="form" label-width="120px" @submit.prevent="submitForm">
+        <el-form-item label="创作主题" required>
+          <el-input v-model="form.theme" placeholder="例如：森林冒险、宇宙探索、海底世界"></el-input>
+        </el-form-item>
+        <el-form-item label="绘本风格">
+          <el-select v-model="form.style" placeholder="请选择绘本风格" class="w-100">
+            <el-option v-for="item in styleOptions" :key="item.value" :label="item.label" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="页数">
+          <el-slider v-model="form.page_count" :min="1" :max="6" :step="1" show-stops />
+          <div class="page-count-text">{{ form.page_count }} 页</div>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" native-type="submit" :loading="loading" class="submit-btn">
+            生成绘本
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
+
+    <!-- 状态提示 -->
+    <el-card v-if="loadingStatus" class="status-card">
+      <el-alert type="info" :closable="false">
+        <template #title>
+          <div class="status-info">
+            <el-icon class="status-icon"><Loading /></el-icon>
+            <span>{{ loadingStatus }}</span>
+          </div>
+        </template>
+      </el-alert>
+    </el-card>
+
+    <!-- 绘本列表 -->
+    <div class="books-section" v-if="books.length > 0">
+      <h2>已生成的绘本</h2>
+      <el-row :gutter="20">
+        <el-col :xs="24" :sm="12" :md="8" :lg="6" v-for="book in books" :key="book.theme">
+          <el-card class="book-card" shadow="hover" @click="viewBook(book)">
+            <template #header>
+              <div class="book-header">
+                <span>{{ book.theme }}</span>
+              </div>
+            </template>
+            <div class="book-cover">
+              <img :src="getImageUrl(book.theme, book.images[0])" alt="封面">
+            </div>
+            <div class="book-info">
+              <div>风格：{{ book.metadata.params.style }}</div>
+              <div>页数：{{ book.images.length }}</div>
+              <el-tag v-if="book.has_pdf" type="success" size="small">PDF可下载</el-tag>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+    </div>
+  </div>
+</template>
+
+<script setup>
+import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { Loading } from '@element-plus/icons-vue'
+import { generateBook, getBooksList, getImageUrl } from '../api'
+import { ElMessage } from 'element-plus'
+
+const router = useRouter()
+const loading = ref(false)
+const loadingStatus = ref('')
+const books = ref([])
+
+const form = ref({
+  theme: '',
+  style: '水彩',
+  page_count: 3
+})
+
+const styleOptions = [
+  { value: '水彩', label: '水彩风格' },
+  { value: '卡通', label: '卡通风格' },
+  { value: '油画', label: '油画风格' },
+  { value: '素描', label: '素描风格' },
+  { value: '赛博朋克', label: '赛博朋克' }
+]
+
+// 表单提交
+const submitForm = async () => {
+  if (!form.value.theme) {
+    ElMessage.warning('请输入创作主题')
+    return
+  }
+
+  try {
+    loading.value = true
+    loadingStatus.value = '正在生成故事内容...'
+
+    const response = await generateBook(form.value)
+
+    if (response.data.success) {
+      ElMessage.success('绘本生成成功！')
+      loadBooksList()
+      router.push(`/book/${form.value.theme}`)
+    } else {
+      ElMessage.error(response.data.message || '生成失败')
+    }
+  } catch (error) {
+    console.error('生成失败:', error)
+    ElMessage.error('绘本生成失败，请重试')
+  } finally {
+    loading.value = false
+    loadingStatus.value = ''
+  }
+}
+
+// 获取绘本列表
+const loadBooksList = async () => {
+  try {
+    const response = await getBooksList()
+    if (response.data.success) {
+      books.value = response.data.books
+    }
+  } catch (error) {
+    console.error('获取绘本列表失败:', error)
+  }
+}
+
+// 查看绘本详情
+const viewBook = (book) => {
+  router.push(`/book/${book.theme}`)
+}
+
+// 页面加载时获取绘本列表
+onMounted(() => {
+  loadBooksList()
+})
+</script>
+
+<style scoped>
+.home-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.header-card {
+  margin-bottom: 20px;
+  text-align: center;
+  background-color: #f0f9ff;
+}
+
+.header-card h1 {
+  color: #409EFF;
+  margin-bottom: 10px;
+}
+
+.form-card {
+  margin-bottom: 20px;
+}
+
+.status-card {
+  margin-bottom: 20px;
+}
+
+.status-info {
+  display: flex;
+  align-items: center;
+}
+
+.status-icon {
+  margin-right: 8px;
+  animation: spin 1s linear infinite;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.submit-btn {
+  width: 100%;
+}
+
+.page-count-text {
+  text-align: center;
+  margin-top: 5px;
+  color: #606266;
+}
+
+.books-section {
+  margin-top: 30px;
+}
+
+.books-section h2 {
+  margin-bottom: 20px;
+  color: #303133;
+  font-weight: 500;
+}
+
+.book-card {
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.book-card:hover {
+  transform: translateY(-5px);
+}
+
+.book-header {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: bold;
+}
+
+.book-cover {
+  height: 180px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #f5f7fa;
+}
+
+.book-cover img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.book-info {
+  font-size: 14px;
+  color: #606266;
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+</style>

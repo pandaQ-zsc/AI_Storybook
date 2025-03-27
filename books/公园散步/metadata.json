@@ -1,0 +1,52 @@
+{
+  "params": {
+    "theme": "公园散步",
+    "style": "水彩",
+    "page_count": 3
+  },
+  "visual_tags": {
+    "colors": [
+      "绿色",
+      "彩色"
+    ],
+    "objects": [
+      "草地",
+      "花朵",
+      "大树",
+      "蝴蝶",
+      "喷泉"
+    ]
+  },
+  "raw_data": {
+    "id": "021741871109604f8563f4f2f12135bd389c1ba123e61623179ee",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "【PAGE】阳光明媚的日子里，妈妈牵着小莉的手走进公园。[翠绿的草地]像柔软的毯子，[五颜六色的花朵]竞相开放，散发出阵阵清香。小莉兴奋地指着前方，「妈妈，你看那棵大树，好像一把大伞。」妈妈微笑着回答：「是啊，我们过去在树荫下休息会儿。」\n【PAGE】她们来到大树下，[粗壮的树干]像是在守护着公园。这时，一只[彩色的蝴蝶]飞了过来，在花丛中翩翩起舞。小莉连忙追过去，「蝴蝶，等等我，你好漂亮呀。」蝴蝶似乎听懂了，在她身边绕了几圈。不远处，[石凳石桌]静静摆放着。\n【PAGE】玩累的小莉和妈妈坐在石凳上，喝着水。突然听到[潺潺的流水声]，原来是一旁的[小喷泉]。小莉跑过去，伸出小手感受着溅起的水花，「好凉快呀。」妈妈在旁边看着她，眼中满是爱意。公园的一切都那么美好，让人不舍离去。 \n{\"colors\": [\"绿色\", \"彩色\"], \"objects\": [\"草地\", \"花朵\", \"大树\", \"蝴蝶\", \"喷泉\"]} ",
+          "role": "assistant",
+          "function_call": null,
+          "tool_calls": null
+        }
+      }
+    ],
+    "created": 1741871117,
+    "model": "doubao-pro-32k-241215",
+    "object": "chat.completion",
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 269,
+      "prompt_tokens": 178,
+      "total_tokens": 447,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "service_tier": "default"
+  }
+}

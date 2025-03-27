@@ -1,0 +1,51 @@
+{
+  "params": {
+    "theme": "校园生活",
+    "style": "水彩",
+    "page_count": 2
+  },
+  "visual_tags": {
+    "colors": [
+      "绿色",
+      "暖黄色"
+    ],
+    "objects": [
+      "操场",
+      "足球场",
+      "图书馆",
+      "书籍"
+    ]
+  },
+  "raw_data": {
+    "id": "0217418484515130f69f8e3142d9169909794ce9545a995fec894",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "【PAGE】阳光洒满校园，[绿树]随风摇曳，[操场]上热闹非凡。小明和小红手牵手走向[足球场]，小明兴奋地说：「今天体育课，咱们一起踢球吧！」小红笑着回应：「好呀，我可要好好表现。」同学们已经在球场上追逐奔跑，欢笑声回荡在空中。\n\n【PAGE】课后，大家来到[图书馆]。书架上摆满了[书籍]，散发着墨香。小刚指着一本绘本说：「这本故事超有趣。」小丽凑过来：「快讲讲。」他们围坐在一起，沉浸在书的世界里，阳光透过[窗户]洒在他们身上，画面温馨而美好。\n\n{\"colors\": [\"绿色\", \"暖黄色\"], \"objects\": [\"操场\", \"足球场\", \"图书馆\", \"书籍\"]} ",
+          "role": "assistant",
+          "function_call": null,
+          "tool_calls": null
+        }
+      }
+    ],
+    "created": 1741848457,
+    "model": "doubao-pro-32k-241215",
+    "object": "chat.completion",
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 174,
+      "prompt_tokens": 178,
+      "total_tokens": 352,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "service_tier": "default"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "params": {
+    "theme": "飞流直下三千尺",
+    "style": "水彩",
+    "page_count": 3
+  },
+  "visual_tags": {
+    "colors": [
+      "绿色",
+      "蓝色",
+      "白色"
+    ],
+    "objects": [
+      "瀑布",
+      "青山",
+      "绿树",
+      "水潭"
+    ]
+  },
+  "raw_data": {
+    "id": "021742820479134ca8dc5cdfbc809995ade91978cdf2129fa28a3",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "【PAGE】阳光明媚的日子里，小兔子和小猴子相约来到了一座美丽的山谷。[青山]连绵起伏，[绿树]郁郁葱葱，山谷间一条[瀑布]从高处飞泻而下。小兔子兴奋地指着瀑布大喊：「哇，快看这瀑布，好壮观！」小猴子挠挠头说：「是呀，真漂亮！」\n【PAGE】它们走近瀑布，[水花]飞溅在身上，凉凉的很舒服。瀑布下是一湾[清澈]的水潭，潭底的[石头]和[水草]清晰可见。小兔子捧起一捧水，对小猴子说：「这水好干净呀。」小猴子接过水洒向空中，欢快地说：「太好玩啦！」\n【PAGE】玩累了，它们坐在[草地]上，望着瀑布。小兔子感慨：「这瀑布让我想起一句诗，飞流直下三千尺。」小猴子歪着头问：「什么意思呀？」小兔子笑着解释：「就是形容瀑布很长很壮观呢。」此刻，阳光洒在瀑布上，仿佛一幅水彩画。\n{\"colors\": [\"绿色\", \"蓝色\", \"白色\"], \"objects\": [\"瀑布\", \"青山\", \"绿树\", \"水潭\"]} ",
+          "role": "assistant",
+          "function_call": null,
+          "tool_calls": null
+        }
+      }
+    ],
+    "created": 1742820487,
+    "model": "doubao-pro-32k-241215",
+    "object": "chat.completion",
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 267,
+      "prompt_tokens": 181,
+      "total_tokens": 448,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "service_tier": "default"
+  }
+}

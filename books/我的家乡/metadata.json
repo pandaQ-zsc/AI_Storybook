@@ -1,0 +1,52 @@
+{
+  "params": {
+    "theme": "我的家乡",
+    "style": "素描",
+    "page_count": 3
+  },
+  "visual_tags": {
+    "colors": [
+      "绿色",
+      "蓝色",
+      "金色"
+    ],
+    "objects": [
+      "小溪",
+      "石桥",
+      "房屋",
+      "稻田"
+    ]
+  },
+  "raw_data": {
+    "id": "0217430415657311939f77b1834fbcd2382676f579da17cfaf9cb",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "【PAGE】我的家乡有一条清澈的[小溪]，溪水潺潺流淌。溪边是大片的[草地]，绿草如茵。我和小伙伴常常在这里玩耍。「看，水里好多小鱼！」小明兴奋地喊着。我凑近一看，真的有好多小鱼在自由自在地游弋。旁边还有几棵[柳树]，细长的柳枝随风飘舞。\n【PAGE】村子中间有一座古老的[石桥]，桥下流水不断。桥边是错落有致的[房屋]，白墙黑瓦很是古朴。一位老爷爷坐在门口晒太阳，我走上前问：「爷爷，您在干嘛呢？」爷爷笑着说：「晒晒太阳，看看村子。」远处的[山峦]连绵起伏，与蓝天白云相映成趣。\n【PAGE】村外是大片的[稻田]，到了秋天，金黄的稻穗沉甸甸的。田边有几座[稻草人]，直直地站着守护稻田。我对小红说：「咱们家乡真美！」小红点头：「是啊，永远都看不够。」不远处还有一个[风车]，慢悠悠地转动着，仿佛在诉说着家乡的故事。\n{\"colors\": [\"绿色\", \"蓝色\", \"金色\"], \"objects\": [\"小溪\", \"石桥\", \"房屋\", \"稻田\"]} ",
+          "role": "assistant",
+          "function_call": null,
+          "tool_calls": null
+        }
+      }
+    ],
+    "created": 1743041572,
+    "model": "doubao-pro-32k-241215",
+    "object": "chat.completion",
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 274,
+      "prompt_tokens": 177,
+      "total_tokens": 451,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "service_tier": "default"
+  }
+}

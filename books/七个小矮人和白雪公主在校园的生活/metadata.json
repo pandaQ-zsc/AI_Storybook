@@ -1,0 +1,50 @@
+{
+  "params": {
+    "theme": "七个小矮人和白雪公主在校园的生活",
+    "style": "水彩",
+    "page_count": 2
+  },
+  "visual_tags": {
+    "colors": [
+      "淡蓝色",
+      "绿色"
+    ],
+    "objects": [
+      "篮球架",
+      "木质桌椅",
+      "黑板"
+    ]
+  },
+  "raw_data": {
+    "id": "021741848676550af73929b5f4543eb3ef4fe42cda09a3d348b30",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "【PAGE】阳光洒满校园操场，白雪公主穿着淡蓝裙子，和七个小矮人一起奔跑着。[绿色的草坪]上，小矮人们开心大笑。其中一个小矮人指着篮球架喊：「公主，我们一起打篮球吧！」白雪公主微笑点头：「好呀！」他们围绕着[篮球架]，欢快地追逐篮球。\n【PAGE】教室里，[木质的桌椅]摆放整齐。白雪公主在黑板上画画，七个小矮人围在周围。一个小矮人说：「公主，你画得真美！」白雪公主笑着回应：「谢谢，这是我们美好的校园生活呀。」他们看着黑板上画的[校园风景]，眼里满是幸福。\n{\"colors\": [\"淡蓝色\", \"绿色\"], \"objects\": [\"篮球架\", \"木质桌椅\", \"黑板\"]} ",
+          "role": "assistant",
+          "function_call": null,
+          "tool_calls": null
+        }
+      }
+    ],
+    "created": 1741848681,
+    "model": "doubao-pro-32k-241215",
+    "object": "chat.completion",
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 179,
+      "prompt_tokens": 186,
+      "total_tokens": 365,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "service_tier": "default"
+  }
+}

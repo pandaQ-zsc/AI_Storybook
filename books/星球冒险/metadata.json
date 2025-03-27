@@ -1,0 +1,51 @@
+{
+  "params": {
+    "theme": "星球冒险",
+    "style": "水彩",
+    "page_count": 3
+  },
+  "visual_tags": {
+    "colors": [
+      "蓝色",
+      "紫色"
+    ],
+    "objects": [
+      "太空船",
+      "土星",
+      "紫色森林",
+      "水晶宫殿"
+    ]
+  },
+  "raw_data": {
+    "id": "021741423030245bd08282fc59abb0d94162718443a97897dbfee",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "【PAGE】在浩瀚宇宙中，小小的太空船缓缓飞行。[闪烁的星星]在四周环绕，[巨大的土星]拖着美丽的光环。宇航员小莉兴奋地看着窗外，对同伴小明说：「看，这片星空真美！」小明点点头：「是啊，不知道前面还有什么奇妙景象。」\n【PAGE】太空船来到一颗蓝色星球旁，缓缓降落。这里有[茂密的紫色森林]，[流淌着荧光液体的小溪]。小莉好奇地捧起一捧荧光液体，「这是什么呀，亮亮的。」小明猜测：「也许是这颗星球独有的物质。」\n【PAGE】探索中，他们发现了一座[闪耀的水晶宫殿]。宫殿里[彩色的宝石]散发着光芒。小莉惊叹：「太壮观啦！」小明笑着说：「这次星球冒险太值得啦。」他们带着满满的回忆，踏上归程。\n{\"colors\": [\"蓝色\", \"紫色\"], \"objects\": [\"太空船\", \"土星\", \"紫色森林\", \"水晶宫殿\"]} ",
+          "role": "assistant",
+          "function_call": null,
+          "tool_calls": null
+        }
+      }
+    ],
+    "created": 1741423036,
+    "model": "doubao-pro-32k-241215",
+    "object": "chat.completion",
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 226,
+      "prompt_tokens": 178,
+      "total_tokens": 404,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "service_tier": "default"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "params": {
+    "theme": "飞流直下三千尺2",
+    "style": "写实",
+    "page_count": 2
+  },
+  "visual_tags": {
+    "colors": [
+      "绿色",
+      "白色"
+    ],
+    "objects": [
+      "瀑布",
+      "悬崖",
+      "树木",
+      "野花",
+      "岩石"
+    ]
+  },
+  "raw_data": {
+    "id": "021742820726435a4d282d02cf069a98b1ad32471a186991c2df1",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "【PAGE】在一座雄伟的高山上，[陡峭的悬崖]边，一条[汹涌的瀑布]如银河般从高空飞泻而下。小明和爸爸站在瀑布下方，水汽扑面而来。小明兴奋地大喊：「爸爸，这瀑布好壮观啊！」爸爸笑着回应：「是啊，就像诗里说的‘飞流直下三千尺’。」周围还有[郁郁葱葱的树木]，随风摇曳。\n【PAGE】小明和爸爸沿着[蜿蜒的小路]慢慢前行，路上有[五颜六色的野花]盛开。小明好奇地问：「爸爸，这瀑布的水从哪里来呀？」爸爸耐心解释：「是山上的雨水和积雪汇聚而成的。」不远处，[一块巨大的岩石]屹立在那里，被瀑布的水冲刷得十分光滑。\n{\"colors\": [\"绿色\", \"白色\"], \"objects\": [\"瀑布\", \"悬崖\", \"树木\", \"野花\", \"岩石\"]} ",
+          "role": "assistant",
+          "function_call": null,
+          "tool_calls": null
+        }
+      }
+    ],
+    "created": 1742820732,
+    "model": "doubao-pro-32k-241215",
+    "object": "chat.completion",
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 202,
+      "prompt_tokens": 182,
+      "total_tokens": 384,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "service_tier": "default"
+  }
+}

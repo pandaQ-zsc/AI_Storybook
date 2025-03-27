@@ -1,0 +1,50 @@
+{
+  "params": {
+    "theme": "中国传统故事",
+    "style": "水彩",
+    "page_count": 3
+  },
+  "visual_tags": {
+    "colors": [
+      "淡蓝",
+      "翠绿"
+    ],
+    "objects": [
+      "石桥",
+      "老黄牛",
+      "银河"
+    ]
+  },
+  "raw_data": {
+    "id": "021742459744936e2a9afe543f9057567c751153be6fdea169598",
+    "choices": [
+      {
+        "finish_reason": "stop",
+        "index": 0,
+        "logprobs": null,
+        "message": {
+          "content": "【PAGE】在一个宁静的小村庄，[古老的石桥]横跨在潺潺流淌的[小溪]上，溪边[垂柳]依依。村里有个叫阿福的孩子，他正望着远处[炊烟袅袅]的房屋发呆。这时，爷爷走过来，「阿福，今天给你讲牛郎织女的故事。」阿福眼睛一亮，「好呀，爷爷快讲！」\n【PAGE】爷爷拉着阿福坐在[大石头]上，开始讲起来。「从前，有个勤劳善良的牛郎，他和[老黄牛]相依为命。有一天，牛郎在[湖边]遇到了下凡洗澡的仙女织女，两人一见钟情……」阿福听得入神，仿佛看到了[美丽的织女]在湖边翩翩起舞。\n【PAGE】「后来呢，爷爷？」阿福急切地问。爷爷笑着说，「他们过上了幸福的生活，可有一天，王母娘娘把织女抓回了天上。牛郎披上老黄牛的牛皮，挑着[两个孩子]去追，眼看要追上，王母娘娘划出了[银河]。」阿福难过地说，「那他们怎么办？」爷爷摸摸他的头，「每年七夕，喜鹊会搭起[鹊桥]，让他们相聚。」 \n{\"colors\": [\"淡蓝\", \"翠绿\"], \"objects\": [\"石桥\", \"老黄牛\", \"银河\"]} ",
+          "role": "assistant",
+          "function_call": null,
+          "tool_calls": null
+        }
+      }
+    ],
+    "created": 1742459754,
+    "model": "doubao-pro-32k-241215",
+    "object": "chat.completion",
+    "system_fingerprint": null,
+    "usage": {
+      "completion_tokens": 293,
+      "prompt_tokens": 179,
+      "total_tokens": 472,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "completion_tokens_details": {
+        "reasoning_tokens": 0
+      }
+    },
+    "service_tier": "default"
+  }
+}
