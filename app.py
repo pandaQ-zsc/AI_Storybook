@@ -6,6 +6,7 @@ from pathlib import Path
 import json
 import logging
 from main import generate_book
+import shutil
 
 app = Flask(__name__)
 CORS(app)  # 允许跨域请求
@@ -113,6 +114,24 @@ def get_book_pdf(theme):
     """获取绘本PDF"""
     book_dir = BOOKS_DIR / theme
     return send_from_directory(book_dir, "book.pdf")
+
+@app.route('/api/books/<theme>', methods=['DELETE'])
+def delete_book(theme):
+    """删除指定的绘本"""
+    try:
+        book_dir = BOOKS_DIR / theme
+
+        if not book_dir.exists() or not book_dir.is_dir():
+            return jsonify({"success": False, "message": "绘本不存在"}), 404
+
+        # 删除整个目录
+        shutil.rmtree(book_dir)
+
+        return jsonify({"success": True, "message": f"已成功删除绘本: {theme}"})
+
+    except Exception as e:
+        logger.error(f"删除绘本失败: {str(e)}")
+        return jsonify({"success": False, "message": f"删除失败: {str(e)}"}), 500
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5001)

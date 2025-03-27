@@ -16,14 +16,14 @@ FONT_PATH = "/Library/Fonts/SourceHanSerifSC-Regular.otf"  # 思源宋体路径
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def create_pdf(book_dir,pages):
-    """生成绘本PDF（使用系统默认字体）"""
+def create_pdf(book_dir, pages):
+    """生成绘本PDF（使用思源宋体显示中文）"""
     pdf = FPDF()
 
     # 强制使用UTF-8编码
     pdf.core_fonts_encoding = 'utf-8'
 
-    # 加载中文字体（核心修复）
+    # 加载中文字体
     try:
         pdf.add_font('SourceHan', '', FONT_PATH, uni=True)
         pdf.add_font('SourceHan', 'B', FONT_PATH, uni=True)  # 加载粗体
@@ -36,56 +36,107 @@ def create_pdf(book_dir,pages):
     with open(book_dir / "metadata.json", encoding="utf-8") as f:
         metadata = json.load(f)
 
-    # 解析分页内容（核心修复）<button class="citation-flag" data-index="1">
-    # pages = []
-    # content = metadata["raw_data"]["choices"][0]["message"]["content"]
-    # for part in content.split("【PAGE"):
-    #     if not part.strip():
-    #         continue
-    #     page_num = part[0]
-    #     page_content = part.split("】", 1)[-1].strip()
-    #     pages.append(page_content)
+    # 使用主题作为标题
+    title = metadata["params"]["theme"]
+
+    # 获取原始内容文本
+    raw_content = metadata["raw_data"]["choices"][0]["message"]["content"]
 
     # 添加封面
     pdf.add_page()
-    pdf.set_font('SourceHan', 'B', 24)
+    pdf.set_font('SourceHan', 'B', 28)
+
+    # 计算标题垂直位置，使其居中
     pdf.cell(
         200,
-        30,
-        text=pages[0].split("\n")[0][:20], # 取首段首句作为标题
+        40,
+        text=title,
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
         align='C'
     )
-    # 添加内容页
-    # for page_num in range(1, metadata["params"]["page_count"]+1):
-    #     # 图片页
-    #     pdf.add_page()
-    #     image_path = str(book_dir / f"page_{page_num:03d}.png")
-    #     pdf.image(image_path, x=10, y=30, w=190)
-    #
-    #     # 文字页
-    #     pdf.add_page()
-    #     pdf.set_font('Helvetica', '', 12)
-    #     text_content = pages[page_num-1]  # 修正内容获取方式
-    #
-    #     # 处理中文显示（核心修复）<button class="citation-flag" data-index="2">
-    #     try:
-    #         pdf.multi_cell(0, 10, txt=text_content.encode('latin1').decode('utf8', errors='ignore'))
-    #     except:
-    #         pdf.multi_cell(0, 10, txt=text_content.encode('utf8').decode('latin1', errors='ignore'))
 
+    # 添加绘本风格信息
+    pdf.set_font('SourceHan', '', 14)
+    style_info = f"风格：{metadata['params']['style']} | 页数：{metadata['params']['page_count']}"
+    pdf.cell(
+        200,
+        20,
+        text=style_info,
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+        align='C'
+    )
+
+    # 添加封面图片(使用第一页图片)
+    cover_image = str(book_dir / "page_001.png")
+    if os.path.exists(cover_image):
+        pdf.image(cover_image, x=30, y=80, w=150)
+
+    # 为每页内容创建图文对照布局
     for page_num in range(1, len(pages)+1):
+        # 添加图片页
         pdf.add_page()
         image_path = str(book_dir / f"page_{page_num:03d}.png")
-        pdf.image(image_path, x=10, y=10, w=190)  # 插入带文字的图片
+        pdf.image(image_path, x=10, y=10, w=190)  # 插入图片
+
+        # 添加页码
+        pdf.set_font('SourceHan', '', 10)
+        pdf.set_text_color(150, 150, 150)
+        pdf.text(190, 286, f"{page_num}/{len(pages)}")
+
+        # 重置文本颜色
+        pdf.set_text_color(0, 0, 0)
+
+    # 添加完整故事内容页
+    pdf.add_page()
+    pdf.set_font('SourceHan', 'B', 16)
+    pdf.cell(
+        200,
+        20,
+        text="故事全文",
+        new_x=XPos.LMARGIN,
+        new_y=YPos.NEXT,
+        align='C'
+    )
+
+    # 设置正文字体
+    pdf.set_font('SourceHan', '', 12)
+
+    # 添加格式化后的内容
+    y_position = 40
+    line_height = 8
+
+    for i, page_content in enumerate(pages):
+        # 添加页标题
+        pdf.set_font('SourceHan', 'B', 14)
+        page_title = f"第{i+1}页"
+        pdf.set_xy(10, y_position)
+        pdf.cell(190, 10, page_title, ln=1)
+        y_position += 10
+
+        # 重设字体
+        pdf.set_font('SourceHan', '', 12)
+
+        # 移除[...]格式的标记，让内容更易读
+        clean_content = re.sub(r'\[(.*?)\]', r'\1', page_content)
+
+        # 分段显示内容
+        pdf.set_xy(15, y_position)
+        pdf.multi_cell(180, line_height, clean_content)
+
+        # 更新位置，添加段间距
+        y_position = pdf.get_y() + 10
+
+        # 检查是否需要新页
+        if y_position > 270:
+            pdf.add_page()
+            y_position = 15
 
     # 保存PDF
     pdf.output(str(book_dir / "book.pdf"))
     logger.info(f"PDF生成成功：{book_dir / 'book.pdf'}")
-    # pdf_path = book_dir / "book.pdf"
-    # pdf.output(str(pdf_path))
-    # logger.info(f"PDF生成成功：{pdf_path}")
+    return str(book_dir / "book.pdf")
 
 def extract_dialogue(page_text):
     """从文本中提取对话内容"""

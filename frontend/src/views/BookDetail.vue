@@ -1,21 +1,30 @@
 <template>
   <div class="book-detail-container">
     <div class="book-header">
-      <el-breadcrumb separator="/">
-        <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-        <el-breadcrumb-item>绘本详情</el-breadcrumb-item>
-      </el-breadcrumb>
+      <div class="breadcrumb-container">
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+          <el-breadcrumb-item>绘本详情</el-breadcrumb-item>
+        </el-breadcrumb>
+      </div>
 
-      <div class="book-title">
-        <h1>{{ theme }}</h1>
-        <div class="book-actions">
-          <el-button type="primary" size="small" @click="downloadPdf" :disabled="!bookData?.has_pdf">
-            <el-icon><Download /></el-icon> 下载PDF
-          </el-button>
-          <el-button type="default" size="small" @click="goBack">
-            <el-icon><Back /></el-icon> 返回
-          </el-button>
-        </div>
+      <div class="user-info">
+        <span class="welcome-text">欢迎，{{ username }}</span>
+        <el-button type="danger" size="small" @click="logout">
+          <el-icon><SwitchButton /></el-icon> 退出登录
+        </el-button>
+      </div>
+    </div>
+
+    <div class="book-title">
+      <h1>{{ theme }}</h1>
+      <div class="book-actions">
+        <el-button type="primary" size="small" @click="downloadPdf" :disabled="!bookData?.has_pdf">
+          <el-icon><Download /></el-icon> 下载PDF
+        </el-button>
+        <el-button type="default" size="small" @click="goBack">
+          <el-icon><Back /></el-icon> 返回
+        </el-button>
       </div>
     </div>
 
@@ -91,11 +100,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onBeforeMount } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { getBooksList, getImageUrl, getPdfUrl } from '../api'
-import { Download, Back, Picture } from '@element-plus/icons-vue'
-import { ElMessage } from 'element-plus'
+import { Download, Back, Picture, SwitchButton } from '@element-plus/icons-vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 const router = useRouter()
 const route = useRoute()
@@ -104,6 +113,19 @@ const bookData = ref(null)
 const loading = ref(true)
 const error = ref('')
 const currentPage = ref(0)
+
+// 检查登录状态
+onBeforeMount(() => {
+  const isLoggedIn = localStorage.getItem('isLoggedIn')
+  if (!isLoggedIn || isLoggedIn !== 'true') {
+    ElMessage.warning('请先登录')
+    router.push('/login')
+    return
+  }
+})
+
+// 获取用户名
+const username = ref(localStorage.getItem('username') || '用户')
 
 // 获取绘本数据
 const fetchBookData = async () => {
@@ -152,6 +174,28 @@ const downloadPdf = () => {
   window.open(pdfUrl, '_blank')
 }
 
+// 退出登录
+const logout = () => {
+  ElMessageBox.confirm(
+    '确定要退出登录吗？',
+    '退出提示',
+    {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    }
+  )
+    .then(() => {
+      localStorage.removeItem('isLoggedIn')
+      localStorage.removeItem('username')
+      ElMessage.success('已退出登录')
+      router.push('/login')
+    })
+    .catch(() => {
+      // 取消退出
+    })
+}
+
 // 页面加载时获取绘本数据
 onMounted(() => {
   fetchBookData()
@@ -166,7 +210,22 @@ onMounted(() => {
 }
 
 .book-header {
-  margin-bottom: 30px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.welcome-text {
+  font-size: 14px;
+  color: #409EFF;
+  font-weight: bold;
 }
 
 .book-title {
