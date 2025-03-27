@@ -77,25 +77,35 @@ def list_books():
     """列出所有已生成的绘本"""
     try:
         books = []
+        # 检查books目录是否存在
+        if not BOOKS_DIR.exists() or not BOOKS_DIR.is_dir():
+            logger.warning(f"绘本目录不存在: {BOOKS_DIR}")
+            return jsonify({"success": True, "books": []})
+
         for book_dir in BOOKS_DIR.iterdir():
             if book_dir.is_dir():
-                metadata_path = book_dir / "metadata.json"
-                if metadata_path.exists():
-                    with open(metadata_path, "r", encoding="utf-8") as f:
-                        metadata = json.load(f)
+                try:
+                    metadata_path = book_dir / "metadata.json"
+                    if metadata_path.exists():
+                        with open(metadata_path, "r", encoding="utf-8") as f:
+                            metadata = json.load(f)
 
-                    image_files = [f.name for f in book_dir.glob("page_*.png")]
-                    image_files.sort()
+                        image_files = [f.name for f in book_dir.glob("page_*.png")]
+                        image_files.sort()
 
-                    pdf_path = book_dir / "book.pdf"
-                    has_pdf = pdf_path.exists()
+                        pdf_path = book_dir / "book.pdf"
+                        has_pdf = pdf_path.exists()
 
-                    books.append({
-                        "theme": book_dir.name,
-                        "images": image_files,
-                        "metadata": metadata,
-                        "has_pdf": has_pdf
-                    })
+                        books.append({
+                            "theme": book_dir.name,
+                            "images": image_files,
+                            "metadata": metadata,
+                            "has_pdf": has_pdf
+                        })
+                except Exception as inner_e:
+                    # 记录单本绘本的错误，但继续处理其他绘本
+                    logger.error(f"处理绘本 {book_dir.name} 时出错: {str(inner_e)}")
+                    continue
 
         return jsonify({"success": True, "books": books})
 

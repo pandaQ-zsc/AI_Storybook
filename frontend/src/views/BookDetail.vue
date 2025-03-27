@@ -137,7 +137,18 @@ const fetchBookData = async () => {
 
   try {
     loading.value = true
+
+    // 添加加载状态提示
+    const loadingInstance = ElMessage({
+      type: 'info',
+      message: '正在获取绘本数据...',
+      duration: 0
+    });
+
     const response = await getBooksList()
+
+    // 关闭加载提示
+    loadingInstance.close();
 
     if (response.data.success) {
       const book = response.data.books.find(b => b.theme === theme.value)
@@ -146,13 +157,28 @@ const fetchBookData = async () => {
         bookData.value = book
       } else {
         error.value = '未找到该绘本'
+        ElMessage.error('未找到该绘本，可能已被删除')
+        setTimeout(() => {
+          router.push('/')
+        }, 2000)
       }
     } else {
       error.value = '获取绘本数据失败'
+      ElMessage.error('获取绘本数据失败，将返回首页')
+      setTimeout(() => {
+        router.push('/')
+      }, 2000)
     }
   } catch (err) {
     console.error('获取绘本数据错误:', err)
-    error.value = '获取绘本数据出错'
+    error.value = '连接服务器失败，请确保后端服务已启动'
+    ElMessage.error({
+      message: '连接服务器失败，请确保后端服务已启动',
+      duration: 5000
+    });
+    setTimeout(() => {
+      router.push('/')
+    }, 2000)
   } finally {
     loading.value = false
   }
