@@ -189,7 +189,9 @@ if __name__ == "__main__":
 
     # 生成参数配置
     book_params = {
-        "theme": "星球冒险",
+        # "theme": "校园生活",
+        # "theme": "公园散步",
+        "theme": "飞流直下三千尺",
         "style": "水彩",
         "page_count": 3
     }
