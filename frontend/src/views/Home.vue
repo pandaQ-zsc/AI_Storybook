@@ -1,8 +1,15 @@
 <template>
   <div class="home-container">
     <el-card class="header-card">
-      <h1>AI绘本生成器</h1>
-      <p>输入创作主题，自动生成精美儿童绘本</p>
+      <div style="display: flex; align-items: center;">
+        <img src="../assets/images/BNBU_log.png" alt="Logo" class="header-logo">
+        <div class="header-text">
+          <h1>BNBU-IMS</h1>
+          <h1>XQ</h1>
+          <h1>基于AIGC的绘本生成器</h1>
+          <p>输入创作主题，自动生成精美儿童绘本</p>
+        </div>
+      </div>
     </el-card>
 
     <!-- 生成表单 -->
@@ -11,11 +18,16 @@
         <el-form-item label="创作主题" required>
           <el-input v-model="form.theme" placeholder="例如：森林冒险、宇宙探索、海底世界"></el-input>
         </el-form-item>
-        <el-form-item label="绘本风格">
-          <el-select v-model="form.style" placeholder="请选择绘本风格" class="w-100">
-            <el-option v-for="item in styleOptions" :key="item.value" :label="item.label" :value="item.value" />
-          </el-select>
+         <el-form-item label="绘本风格">
+          <el-input v-model="form.style" placeholder="请输入或选择绘本风格">
+            <template #append>
+              <el-select v-model="form.style" placeholder="请选择绘本风格" style="width: auto; min-width: 50%;">
+                <el-option v-for="item in styleOptions" :key="item.value" :label="item.label" :value="item.value" />
+              </el-select>
+            </template>
+          </el-input>
         </el-form-item>
+        
         <el-form-item label="页数">
           <el-slider v-model="form.page_count" :min="1" :max="6" :step="1" show-stops />
           <div class="page-count-text">{{ form.page_count }} 页</div>
@@ -153,9 +165,26 @@ onMounted(() => {
 
 .header-card {
   margin-bottom: 20px;
-  text-align: center;
   background-color: #f0f9ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+.header-logo {
+  width: 100px;
+  height: 100px;
+  margin-right: 100px;
+}
+
+.header-text {
+  text-align: left;
+}
+
+.header-text h1 {
+  color: #409EFF;
+  margin-bottom: 10px;
+}
+
 
 .header-card h1 {
   color: #409EFF;
