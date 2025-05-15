@@ -27,6 +27,10 @@
               <el-button type="primary" @click="submitForm(ruleFormRef)" class="submit-btn">登录</el-button>
               <el-button @click="resetForm(ruleFormRef)">重置</el-button>
             </el-form-item>
+            <el-form-item class="register-link">
+              <span>还没有账号？</span>
+              <router-link to="/register">立即注册</router-link>
+            </el-form-item>
           </el-form>
         </el-tab-pane>
       </el-tabs>
@@ -68,15 +72,29 @@ const submitForm = async (formEl) => {
   if (!formEl) return
   await formEl.validate((valid) => {
     if (valid) {
-      // 这里可以添加账号密码验证逻辑
-      // const envUsername = "xq"
-      const envUsername = ["xq","fukun","admin","lyy","syy"]
-      const envPassword = "123123"
-      if (envUsername.includes(form.username) && form.password === envPassword) {
+      // 获取已注册用户列表
+      const users = JSON.parse(localStorage.getItem('users') || '[]')
+
+      // 默认的管理员账户列表
+      const adminUsers = ["xq", "fukun", "admin", "lyy", "syy"]
+      const adminPassword = "123123"
+
+      // 先检查是否是管理员账户
+      if (adminUsers.includes(form.username) && form.password === adminPassword) {
+        ElMessage.success('管理员登录成功')
+        localStorage.setItem('isLoggedIn', 'true')
+        localStorage.setItem('username', form.username)
+        router.push('/')
+        return
+      }
+
+      // 检查是否是注册用户
+      const user = users.find(u => u.username === form.username && u.password === form.password)
+      if (user) {
         ElMessage.success('登录成功')
-        localStorage.setItem('isLoggedIn', 'true') // 设置登录状态
-        localStorage.setItem('username', form.username) // 保存用户名
-        router.push('/') // 重定向到主页
+        localStorage.setItem('isLoggedIn', 'true')
+        localStorage.setItem('username', user.username)
+        router.push('/')
       } else {
         ElMessage.error('用户名或密码错误')
       }
@@ -169,5 +187,15 @@ const resetForm = (formEl) => {
 
 :deep(.el-form-item__label) {
   font-weight: 500;
+}
+
+.register-link {
+  text-align: center;
+  margin-top: 10px;
+}
+
+.register-link a {
+  color: #409EFF;
+  margin-left: 5px;
 }
 </style>
